@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnchainIQ — Pro Animatif 2.0</title>
+<title>OnchainIQ — Pro Animatif 2.0 Final Fix CORS</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -39,7 +39,7 @@ img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
 </head>
 
 <body>
-<header><h1>OnchainIQ Pro 2.0</h1></header>
+<header><h1>OnchainIQ Pro 2.0 Final Fix</h1></header>
 
 <section class="hero">
 <h2>Dex Scanner & Interactive Dashboard</h2>
@@ -101,39 +101,44 @@ img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
 <footer>© 2026 OnchainIQ — DexScreener API</footer>
 
 <script>
+// ===== Proxy CORS =====
+const proxy = "https://api.allorigins.win/raw?url=";
+
 // ===== Multi-Token Scan =====
 let chartTokens = [];
 
 async function scanToken(){
-  let address=document.getElementById("tokenInput").value.trim();
-  if(!address){alert("Enter token address!");return;}
-  let url=`https://api.dexscreener.com/latest/dex/tokens/${address}`;
+  let address = document.getElementById("tokenInput").value.trim();
+  if(!address){alert("Enter token address!"); return;}
+  let url = proxy + "https://api.dexscreener.com/latest/dex/tokens/" + address;
   try{
-    let res=await fetch(url); let data=await res.json();
-    if(!data.pairs||data.pairs.length===0){alert("Token not found");return;}
-    let token=data.pairs[0]; document.getElementById("resultBox").style.display="block";
-    let logo=token.baseToken.logoURI||'';
+    let res = await fetch(url); let data = await res.json();
+    if(!data.pairs || data.pairs.length===0){alert("Token not found"); return;}
+    let token = data.pairs[0]; document.getElementById("resultBox").style.display="block";
+
+    // Logo token dengan fallback
+    let logo = token.baseToken.logoURI || 'https://via.placeholder.com/24?text=?';
+
     document.getElementById("tokenName").innerHTML=
-      `${logo?`<img src="${logo}" class="token-logo">`:''}<b>${token.baseToken.name}</b> (${token.baseToken.symbol})`;
+      `<img src="${logo}" class="token-logo"><b>${token.baseToken.name}</b> (${token.baseToken.symbol})`;
     document.getElementById("tokenPrice").innerHTML=`💰 Price: <b>$${token.priceUsd}</b>`;
     document.getElementById("tokenLiquidity").innerHTML=`💧 Liquidity: <b>$${token.liquidity.usd}</b>`;
     document.getElementById("tokenVolume").innerHTML=`📈 Volume24h: <b>$${token.volume.h24}</b>`;
     document.getElementById("tokenDex").innerHTML=`🔄 DEX: <b>${token.dexId}</b> | Chain: <b>${token.chainId}</b>`;
-    let score=token.liquidity.usd>10000 && token.baseToken.owners>50?"Safe":token.liquidity.usd>1000?"Medium":"High Risk";
-    let scoreClass=score==="Safe"?"safe":score==="Medium"?"medium":"high";
+    let score = token.liquidity.usd>10000 && token.baseToken.owners>50 ? "Safe" : token.liquidity.usd>1000 ? "Medium":"High Risk";
+    let scoreClass = score==="Safe"?"safe":score==="Medium"?"medium":"high";
     document.getElementById("riskScore").innerHTML=`Risk Score: <span class="${scoreClass}">${score}</span>`;
 
-    // ===== Multi-Token Chart =====
-    let labels=token.chart?.map((p,i)=>i+1)||[]; 
-    let prices=token.chart?.map(p=>p.price)||[];
-    chartTokens.push({symbol:token.baseToken.symbol,data:prices,borderColor:getRandomColor(),fill:false});
+    // Chart data fallback
+    let labels = token.chart?.map((p,i)=>i+1) || Array.from({length:20},(_,i)=>i+1);
+    let prices = token.chart?.map(p=>p.price) || Array.from({length:20},()=>0);
+
+    chartTokens.push({symbol:token.baseToken.symbol, data:prices, borderColor:getRandomColor(), fill:false});
     renderChart(labels);
-  }catch(err){alert("Error fetching token!");console.log(err);}
+  }catch(err){alert("Error fetching token!"); console.log(err);}
 }
 
-function getRandomColor(){
-  return 'hsl('+Math.floor(Math.random()*360)+',70%,50%)';
-}
+function getRandomColor(){return 'hsl('+Math.floor(Math.random()*360)+',70%,50%)';}
 
 let myChart;
 function renderChart(labels){
@@ -142,31 +147,37 @@ function renderChart(labels){
   myChart=new Chart(ctx,{
     type:'line',
     data:{labels:labels,datasets:chartTokens},
-    options:{animation:{duration:1000},responsive:true,plugins:{legend:{display:true}},scales:{x:{display:false}}}
+    options:{
+      animation:{duration:1000},
+      responsive:true,
+      plugins:{legend:{display:true}},
+      scales:{x:{display:true}}
+    }
   });
 }
 
-// ===== Trending Tokens with Hot Movers =====
+// ===== Trending Tokens with Hot Movers + Search =====
 async function loadTrending(){
   let chain=document.getElementById("filterChain").value;
   let sort=document.getElementById("sortTrending").value||"topGain";
   let search=document.getElementById("searchToken").value.toLowerCase();
-  let url="https://api.dexscreener.com/latest/dex/search?q=trending";
+  let url = proxy + "https://api.dexscreener.com/latest/dex/search?q=trending";
   try{
-    let res=await fetch(url); let data=await res.json();
+    let res = await fetch(url); let data = await res.json();
     let list=document.getElementById("trendingList"); list.innerHTML="";
     let pairs=data.pairs;
     if(chain) pairs=pairs.filter(p=>p.chainId.toLowerCase().includes(chain));
-    if(search) pairs=pairs.filter(p=>p.baseToken.symbol.toLowerCase().includes(search)||p.baseToken.name.toLowerCase().includes(search));
+    if(search) pairs=pairs.filter(p=>p.baseToken.symbol.toLowerCase().includes(search) || p.baseToken.name.toLowerCase().includes(search));
     if(sort==="topGain") pairs=pairs.sort((a,b)=>(b.priceChange?.h24||0)-(a.priceChange?.h24||0));
     else if(sort==="topVolume") pairs=pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0));
+
     pairs.slice(0,10).forEach(pair=>{
       let div=document.createElement("div"); div.className="data-row";
-      let logo=pair.baseToken.logoURI||'';
-      let gainLoss=pair.priceChange?.h24||0;
-      if(gainLoss>5) div.classList.add('topGain'); // Hot mover
-      else if(gainLoss<-5) div.classList.add('topLoss'); // Hot mover
-      div.innerHTML=`${logo?`<img src="${logo}" class="token-logo">`:''}<b>${pair.baseToken.symbol}</b> — Price: $${pair.priceUsd} | 24h: ${gainLoss.toFixed(2)}% | Vol: $${pair.volume.h24}`;
+      let logo = pair.baseToken.logoURI || 'https://via.placeholder.com/24?text=?';
+      let gainLoss = pair.priceChange?.h24||0;
+      if(gainLoss>5) div.classList.add('topGain');
+      else if(gainLoss<-5) div.classList.add('topLoss');
+      div.innerHTML=`<img src="${logo}" class="token-logo"><b>${pair.baseToken.symbol}</b> — Price: $${pair.priceUsd} | 24h: ${gainLoss.toFixed(2)}% | Vol: $${pair.volume.h24}`;
       list.appendChild(div);
     });
   }catch(err){document.getElementById("trendingList").innerHTML="Failed to load trending tokens.";}
@@ -174,9 +185,9 @@ async function loadTrending(){
 
 // ===== Dashboard =====
 async function loadDashboard(){
-  let url="https://api.dexscreener.com/latest/dex/search?q=trending";
+  let url = proxy + "https://api.dexscreener.com/latest/dex/search?q=trending";
   try{
-    let res=await fetch(url); let data=await res.json();
+    let res = await fetch(url); let data = await res.json();
     let gainers=document.getElementById("topGainers"),
         losers=document.getElementById("topLosers"),
         volume=document.getElementById("topVolume"),
