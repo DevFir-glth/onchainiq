@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnchainIQ — Premium Dex Scanner</title>
+<title>OnchainIQ — Pro Animatif 2.0</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -11,15 +11,15 @@
 body{background: radial-gradient(circle at top, #0a0f1f, #000);color:white;min-height:100vh;}
 header{padding:20px 30px;display:flex;justify-content:space-between;align-items:center;}
 header h1{font-size:22px;font-weight:800;color:#00f7ff;}
-.hero{text-align:center;padding:40px 20px;}
-.hero h2{font-size:40px;font-weight:800;}
+.hero{text-align:center;padding:30px 20px;}
+.hero h2{font-size:36px;font-weight:800;}
 .hero h2 span{color:#00f7ff;}
 .hero p{margin-top:10px;font-size:15px;opacity:0.75;max-width:600px;margin:auto;}
 .search-box{margin-top:20px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
 input, select{padding:12px;border-radius:12px;border:none;outline:none;font-size:14px;}
 button{padding:12px 20px;border:none;border-radius:12px;background:#00f7ff;font-weight:700;cursor:pointer;}
 button:hover{background:#00c2cc;}
-.result{max-width:800px;margin:30px auto;background:rgba(255,255,255,0.05);border:1px solid rgba(0,247,255,0.2);padding:25px;border-radius:18px;}
+.result{max-width:900px;margin:30px auto;background:rgba(255,255,255,0.05);border:1px solid rgba(0,247,255,0.2);padding:25px;border-radius:18px;}
 .result h3{color:#00f7ff;margin-bottom:15px;}
 .data-row{margin:6px 0;font-size:14px;opacity:0.9;display:flex;align-items:center;gap:6px;}
 .data-row.topGain{color:#00ff99;font-weight:700;}
@@ -39,11 +39,11 @@ img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
 </head>
 
 <body>
-<header><h1>OnchainIQ Premium</h1></header>
+<header><h1>OnchainIQ Pro 2.0</h1></header>
 
 <section class="hero">
-<h2>Dex Scanner & Dashboard</h2>
-<p>Scan tokens, check risk, live chart animation, trending tokens, interactive dashboard.</p>
+<h2>Dex Scanner & Interactive Dashboard</h2>
+<p>Scan tokens, view multi-token charts, hot movers, trending tokens, filter & search all in real-time.</p>
 <div class="search-box">
 <input id="tokenInput" type="text" placeholder="Enter Token Contract Address..."/>
 <button onclick="scanToken()">Scan</button>
@@ -59,6 +59,7 @@ img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
   <option value="topGain">Top Gain</option>
   <option value="topVolume">Top Volume</option>
 </select>
+<input id="searchToken" type="text" placeholder="Search Token..." oninput="loadTrending()"/>
 </div>
 </section>
 
@@ -100,7 +101,9 @@ img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
 <footer>© 2026 OnchainIQ — DexScreener API</footer>
 
 <script>
-// ===== Scan Token =====
+// ===== Multi-Token Scan =====
+let chartTokens = [];
+
 async function scanToken(){
   let address=document.getElementById("tokenInput").value.trim();
   if(!address){alert("Enter token address!");return;}
@@ -120,38 +123,49 @@ async function scanToken(){
     let scoreClass=score==="Safe"?"safe":score==="Medium"?"medium":"high";
     document.getElementById("riskScore").innerHTML=`Risk Score: <span class="${scoreClass}">${score}</span>`;
 
-    // ===== Chart Animation =====
+    // ===== Multi-Token Chart =====
     let labels=token.chart?.map((p,i)=>i+1)||[]; 
     let prices=token.chart?.map(p=>p.price)||[];
-    if(window.myChart) window.myChart.destroy();
-    let ctx=document.getElementById("priceChart").getContext("2d");
-    window.myChart=new Chart(ctx,{
-      type:'line',
-      data:{labels:labels,datasets:[{label:'Price USD',data:prices,borderColor:'#00f7ff',backgroundColor:'rgba(0,247,255,0.2)',fill:true,lineTension:0.4}]},
-      options:{animation:{duration:1000},responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false}}}
-    });
-
+    chartTokens.push({symbol:token.baseToken.symbol,data:prices,borderColor:getRandomColor(),fill:false});
+    renderChart(labels);
   }catch(err){alert("Error fetching token!");console.log(err);}
 }
 
-// ===== Trending Tokens =====
+function getRandomColor(){
+  return 'hsl('+Math.floor(Math.random()*360)+',70%,50%)';
+}
+
+let myChart;
+function renderChart(labels){
+  let ctx=document.getElementById("priceChart").getContext("2d");
+  if(myChart) myChart.destroy();
+  myChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:labels,datasets:chartTokens},
+    options:{animation:{duration:1000},responsive:true,plugins:{legend:{display:true}},scales:{x:{display:false}}}
+  });
+}
+
+// ===== Trending Tokens with Hot Movers =====
 async function loadTrending(){
   let chain=document.getElementById("filterChain").value;
   let sort=document.getElementById("sortTrending").value||"topGain";
+  let search=document.getElementById("searchToken").value.toLowerCase();
   let url="https://api.dexscreener.com/latest/dex/search?q=trending";
   try{
     let res=await fetch(url); let data=await res.json();
     let list=document.getElementById("trendingList"); list.innerHTML="";
     let pairs=data.pairs;
     if(chain) pairs=pairs.filter(p=>p.chainId.toLowerCase().includes(chain));
+    if(search) pairs=pairs.filter(p=>p.baseToken.symbol.toLowerCase().includes(search)||p.baseToken.name.toLowerCase().includes(search));
     if(sort==="topGain") pairs=pairs.sort((a,b)=>(b.priceChange?.h24||0)-(a.priceChange?.h24||0));
     else if(sort==="topVolume") pairs=pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0));
     pairs.slice(0,10).forEach(pair=>{
       let div=document.createElement("div"); div.className="data-row";
       let logo=pair.baseToken.logoURI||'';
       let gainLoss=pair.priceChange?.h24||0;
-      if(gainLoss>0) div.classList.add('topGain');
-      else if(gainLoss<0) div.classList.add('topLoss');
+      if(gainLoss>5) div.classList.add('topGain'); // Hot mover
+      else if(gainLoss<-5) div.classList.add('topLoss'); // Hot mover
       div.innerHTML=`${logo?`<img src="${logo}" class="token-logo">`:''}<b>${pair.baseToken.symbol}</b> — Price: $${pair.priceUsd} | 24h: ${gainLoss.toFixed(2)}% | Vol: $${pair.volume.h24}`;
       list.appendChild(div);
     });
@@ -189,8 +203,8 @@ async function loadDashboard(){
 
 // ===== Auto Load =====
 loadTrending(); loadDashboard();
-setInterval(loadTrending,10000); // update trending setiap 10 detik
-setInterval(loadDashboard,10000); // update dashboard setiap 10 detik
+setInterval(loadTrending,10000);
+setInterval(loadDashboard,10000);
 </script>
 </body>
 </html>
