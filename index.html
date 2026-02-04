@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OnchainIQ — Dex Scanner Pro</title>
+<title>OnchainIQ — Premium Dex Scanner</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
@@ -11,39 +11,54 @@
 body{background: radial-gradient(circle at top, #0a0f1f, #000);color:white;min-height:100vh;}
 header{padding:20px 30px;display:flex;justify-content:space-between;align-items:center;}
 header h1{font-size:22px;font-weight:800;color:#00f7ff;}
-.hero{text-align:center;padding:60px 20px;}
-.hero h2{font-size:48px;font-weight:800;}
+.hero{text-align:center;padding:40px 20px;}
+.hero h2{font-size:40px;font-weight:800;}
 .hero h2 span{color:#00f7ff;}
-.hero p{margin-top:15px;font-size:16px;opacity:0.75;max-width:600px;margin:auto;}
-.search-box{margin-top:30px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
-input{padding:14px;width:340px;border-radius:12px;border:none;outline:none;font-size:15px;}
-button{padding:14px 22px;border:none;border-radius:12px;background:#00f7ff;font-weight:700;cursor:pointer;}
+.hero p{margin-top:10px;font-size:15px;opacity:0.75;max-width:600px;margin:auto;}
+.search-box{margin-top:20px;display:flex;justify-content:center;gap:10px;flex-wrap:wrap;}
+input, select{padding:12px;border-radius:12px;border:none;outline:none;font-size:14px;}
+button{padding:12px 20px;border:none;border-radius:12px;background:#00f7ff;font-weight:700;cursor:pointer;}
 button:hover{background:#00c2cc;}
-.result{max-width:750px;margin:30px auto;background:rgba(255,255,255,0.05);border:1px solid rgba(0,247,255,0.2);padding:25px;border-radius:18px;}
+.result{max-width:800px;margin:30px auto;background:rgba(255,255,255,0.05);border:1px solid rgba(0,247,255,0.2);padding:25px;border-radius:18px;}
 .result h3{color:#00f7ff;margin-bottom:15px;}
-.data-row{margin:8px 0;font-size:15px;opacity:0.9;}
-.chart-container{margin-top:25px;}
-footer{text-align:center;padding:25px;opacity:0.5;font-size:14px;}
-.risk-score{margin-top:10px;font-weight:700;font-size:16px;}
+.data-row{margin:6px 0;font-size:14px;opacity:0.9;display:flex;align-items:center;gap:6px;}
+.data-row.topGain{color:#00ff99;font-weight:700;}
+.data-row.topLoss{color:#ff3300;font-weight:700;}
+.chart-container{margin-top:20px;}
+footer{text-align:center;padding:25px;opacity:0.5;font-size:13px;}
+.risk-score{margin-top:8px;font-weight:700;font-size:14px;}
 .safe{color:#00ff99;}
 .medium{color:#ffcc00;}
 .high{color:#ff3300;}
-.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin:40px;}
-.dashboard .card{background:rgba(255,255,255,0.05);padding:20px;border-radius:16px;border:1px solid rgba(0,247,255,0.15);}
-.dashboard .card h4{color:#00f7ff;margin-bottom:10px;}
+.dashboard{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:30px;}
+.dashboard .card{background:rgba(255,255,255,0.05);padding:15px;border-radius:16px;border:1px solid rgba(0,247,255,0.15);}
+.dashboard .card h4{color:#00f7ff;margin-bottom:8px;font-size:15px;}
+img.token-logo{width:24px;height:24px;vertical-align:middle;border-radius:12px;}
 @media(max-width:700px){.dashboard{grid-template-columns:1fr;}}
 </style>
 </head>
 
 <body>
-<header><h1>OnchainIQ Pro</h1></header>
+<header><h1>OnchainIQ Premium</h1></header>
 
 <section class="hero">
 <h2>Dex Scanner & Dashboard</h2>
-<p>Scan tokens, view risk scores, live charts, trending tokens, top gainers, and volume rankings.</p>
+<p>Scan tokens, check risk, live chart animation, trending tokens, interactive dashboard.</p>
 <div class="search-box">
 <input id="tokenInput" type="text" placeholder="Enter Token Contract Address..."/>
-<button onclick="scanToken()">Scan Now</button>
+<button onclick="scanToken()">Scan</button>
+</div>
+<div class="search-box" style="margin-top:10px;">
+<select id="filterChain" onchange="loadTrending()"> 
+  <option value="">All Chains</option>
+  <option value="ethereum">Ethereum</option>
+  <option value="bsc">BSC</option>
+  <option value="polygon">Polygon</option>
+</select>
+<select id="sortTrending" onchange="loadTrending()">
+  <option value="topGain">Top Gain</option>
+  <option value="topVolume">Top Volume</option>
+</select>
 </div>
 </section>
 
@@ -60,13 +75,17 @@ footer{text-align:center;padding:25px;opacity:0.5;font-size:14px;}
 
 <div class="result" style="display:block;">
 <h3>🔥 Trending Tokens</h3>
-<div id="trendingList">Loading trending tokens...</div>
+<div id="trendingList">Loading...</div>
 </div>
 
 <div class="dashboard">
 <div class="card">
 <h4>Top Gainers</h4>
 <div id="topGainers">Loading...</div>
+</div>
+<div class="card">
+<h4>Top Losers</h4>
+<div id="topLosers">Loading...</div>
 </div>
 <div class="card">
 <h4>Top Volume</h4>
@@ -78,92 +97,100 @@ footer{text-align:center;padding:25px;opacity:0.5;font-size:14px;}
 </div>
 </div>
 
-<footer>© 2026 OnchainIQ — Powered by DexScreener API</footer>
+<footer>© 2026 OnchainIQ — DexScreener API</footer>
 
 <script>
+// ===== Scan Token =====
 async function scanToken(){
   let address=document.getElementById("tokenInput").value.trim();
-  if(!address){alert("Enter token address");return;}
+  if(!address){alert("Enter token address!");return;}
   let url=`https://api.dexscreener.com/latest/dex/tokens/${address}`;
   try{
-    let res=await fetch(url);
-    let data=await res.json();
+    let res=await fetch(url); let data=await res.json();
     if(!data.pairs||data.pairs.length===0){alert("Token not found");return;}
-    let token=data.pairs[0];
-    document.getElementById("resultBox").style.display="block";
-    document.getElementById("tokenName").innerHTML=`🪙 Token: <b>${token.baseToken.name}</b> (${token.baseToken.symbol})`;
+    let token=data.pairs[0]; document.getElementById("resultBox").style.display="block";
+    let logo=token.baseToken.logoURI||'';
+    document.getElementById("tokenName").innerHTML=
+      `${logo?`<img src="${logo}" class="token-logo">`:''}<b>${token.baseToken.name}</b> (${token.baseToken.symbol})`;
     document.getElementById("tokenPrice").innerHTML=`💰 Price: <b>$${token.priceUsd}</b>`;
     document.getElementById("tokenLiquidity").innerHTML=`💧 Liquidity: <b>$${token.liquidity.usd}</b>`;
     document.getElementById("tokenVolume").innerHTML=`📈 Volume24h: <b>$${token.volume.h24}</b>`;
     document.getElementById("tokenDex").innerHTML=`🔄 DEX: <b>${token.dexId}</b> | Chain: <b>${token.chainId}</b>`;
-
-    // Risk Score
     let score=token.liquidity.usd>10000 && token.baseToken.owners>50?"Safe":token.liquidity.usd>1000?"Medium":"High Risk";
     let scoreClass=score==="Safe"?"safe":score==="Medium"?"medium":"high";
     document.getElementById("riskScore").innerHTML=`Risk Score: <span class="${scoreClass}">${score}</span>`;
 
-    // Chart
-    let labels=token.chart?.map((p,i)=>i+1)||[];
+    // ===== Chart Animation =====
+    let labels=token.chart?.map((p,i)=>i+1)||[]; 
     let prices=token.chart?.map(p=>p.price)||[];
     if(window.myChart) window.myChart.destroy();
     let ctx=document.getElementById("priceChart").getContext("2d");
     window.myChart=new Chart(ctx,{
       type:'line',
-      data:{labels:labels,datasets:[{label:'Price USD',data:prices,borderColor:'#00f7ff',backgroundColor:'rgba(0,247,255,0.2)',fill:true}]},
-      options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false}}}
+      data:{labels:labels,datasets:[{label:'Price USD',data:prices,borderColor:'#00f7ff',backgroundColor:'rgba(0,247,255,0.2)',fill:true,lineTension:0.4}]},
+      options:{animation:{duration:1000},responsive:true,plugins:{legend:{display:false}},scales:{x:{display:false}}}
     });
+
   }catch(err){alert("Error fetching token!");console.log(err);}
 }
 
-// Trending Tokens
+// ===== Trending Tokens =====
 async function loadTrending(){
+  let chain=document.getElementById("filterChain").value;
+  let sort=document.getElementById("sortTrending").value||"topGain";
   let url="https://api.dexscreener.com/latest/dex/search?q=trending";
   try{
-    let res=await fetch(url);
-    let data=await res.json();
-    let list=document.getElementById("trendingList");list.innerHTML="";
-    data.pairs.slice(0,5).forEach(pair=>{
-      let div=document.createElement("div");div.className="data-row";
-      div.innerHTML=`🪙 <b>${pair.baseToken.symbol}</b> — Price: $${pair.priceUsd} | Volume24h: $${pair.volume.h24}`;
+    let res=await fetch(url); let data=await res.json();
+    let list=document.getElementById("trendingList"); list.innerHTML="";
+    let pairs=data.pairs;
+    if(chain) pairs=pairs.filter(p=>p.chainId.toLowerCase().includes(chain));
+    if(sort==="topGain") pairs=pairs.sort((a,b)=>(b.priceChange?.h24||0)-(a.priceChange?.h24||0));
+    else if(sort==="topVolume") pairs=pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0));
+    pairs.slice(0,10).forEach(pair=>{
+      let div=document.createElement("div"); div.className="data-row";
+      let logo=pair.baseToken.logoURI||'';
+      let gainLoss=pair.priceChange?.h24||0;
+      if(gainLoss>0) div.classList.add('topGain');
+      else if(gainLoss<0) div.classList.add('topLoss');
+      div.innerHTML=`${logo?`<img src="${logo}" class="token-logo">`:''}<b>${pair.baseToken.symbol}</b> — Price: $${pair.priceUsd} | 24h: ${gainLoss.toFixed(2)}% | Vol: $${pair.volume.h24}`;
       list.appendChild(div);
     });
   }catch(err){document.getElementById("trendingList").innerHTML="Failed to load trending tokens.";}
 }
 
-// Dashboard
+// ===== Dashboard =====
 async function loadDashboard(){
   let url="https://api.dexscreener.com/latest/dex/search?q=trending";
   try{
-    let res=await fetch(url);let data=await res.json();
-    let gainers=document.getElementById("topGainers");
-    let volume=document.getElementById("topVolume");
-    let listings=document.getElementById("newListings");
-    gainers.innerHTML="";volume.innerHTML="";listings.innerHTML="";
-    // Top 3 Gainers
-    data.pairs.sort((a,b)=>b.priceChange.h24-a.priceChange.h24).slice(0,3).forEach(p=>{
-      let div=document.createElement("div");div.className="data-row";
-      div.innerHTML=`${p.baseToken.symbol}: ${p.priceChange.h24?.toFixed(2)}%`;
-      gainers.appendChild(div);
+    let res=await fetch(url); let data=await res.json();
+    let gainers=document.getElementById("topGainers"),
+        losers=document.getElementById("topLosers"),
+        volume=document.getElementById("topVolume"),
+        listings=document.getElementById("newListings");
+    gainers.innerHTML=""; losers.innerHTML=""; volume.innerHTML=""; listings.innerHTML="";
+    data.pairs.sort((a,b)=>(b.priceChange?.h24||0)-(a.priceChange?.h24||0)).slice(0,3).forEach(p=>{
+      let div=document.createElement("div"); div.className="data-row topGain";
+      div.innerHTML=`${p.baseToken.symbol}: ${p.priceChange?.h24?.toFixed(2)||0}%`; gainers.appendChild(div);
     });
-    // Top 3 Volume
-    data.pairs.sort((a,b)=>b.volume.h24-a.volume.h24).slice(0,3).forEach(p=>{
-      let div=document.createElement("div");div.className="data-row";
-      div.innerHTML=`${p.baseToken.symbol}: $${p.volume.h24}`;
-      volume.appendChild(div);
+    data.pairs.sort((a,b)=>(a.priceChange?.h24||0)-(b.priceChange?.h24||0)).slice(0,3).forEach(p=>{
+      let div=document.createElement("div"); div.className="data-row topLoss";
+      div.innerHTML=`${p.baseToken.symbol}: ${p.priceChange?.h24?.toFixed(2)||0}%`; losers.appendChild(div);
     });
-    // New Listings (last 3)
+    data.pairs.sort((a,b)=>(b.volume?.h24||0)-(a.volume?.h24||0)).slice(0,3).forEach(p=>{
+      let div=document.createElement("div"); div.className="data-row";
+      div.innerHTML=`${p.baseToken.symbol}: $${p.volume?.h24||0}`; volume.appendChild(div);
+    });
     data.pairs.slice(-3).forEach(p=>{
-      let div=document.createElement("div");div.className="data-row";
-      div.innerHTML=`${p.baseToken.symbol} (${p.baseToken.name})`;
-      listings.appendChild(div);
+      let div=document.createElement("div"); div.className="data-row";
+      div.innerHTML=`${p.baseToken.symbol} (${p.baseToken.name})`; listings.appendChild(div);
     });
   }catch(err){console.log(err);}
 }
 
-// Load on page open
-loadTrending();
-loadDashboard();
+// ===== Auto Load =====
+loadTrending(); loadDashboard();
+setInterval(loadTrending,10000); // update trending setiap 10 detik
+setInterval(loadDashboard,10000); // update dashboard setiap 10 detik
 </script>
-
 </body>
 </html>
