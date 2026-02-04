@@ -145,11 +145,46 @@
   <div class="data-row" id="tokenVolume"></div>
   <div class="data-row" id="tokenDex"></div>
 </div>
-
+<!-- Trending Section -->
+<div class="result" style="display:block;">
+  <h3>🔥 Trending Tokens (Live)</h3>
+  <div id="trendingList">Loading trending tokens...</div>
+</div>
 <footer>
   © 2026 OnchainIQ — Powered by DexScreener API
 </footer>
+// Trending Tokens Loader
+  async function loadTrending() {
+    let url = "https://api.dexscreener.com/latest/dex/search?q=trending";
 
+    try {
+      let res = await fetch(url);
+      let data = await res.json();
+
+      let list = document.getElementById("trendingList");
+      list.innerHTML = "";
+
+      data.pairs.slice(0, 5).forEach((pair) => {
+        let div = document.createElement("div");
+        div.className = "data-row";
+
+        div.innerHTML = `
+          🪙 <b>${pair.baseToken.symbol}</b> —
+          Price: $${pair.priceUsd} |
+          Volume24h: $${pair.volume.h24}
+        `;
+
+        list.appendChild(div);
+      });
+
+    } catch (err) {
+      document.getElementById("trendingList").innerHTML =
+        "Failed to load trending tokens.";
+    }
+  }
+
+  // Auto load trending when page opens
+  loadTrending();
 <script>
   async function scanToken() {
     let address = document.getElementById("tokenInput").value.trim();
