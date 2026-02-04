@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>OnchainIQ — Dex Scanner</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at top, #0a0f1f, #000);
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 20px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 800;
+      color: #00f7ff;
+    }
+
+    nav a {
+      margin-left: 20px;
+      text-decoration: none;
+      color: white;
+      font-weight: 600;
+      opacity: 0.8;
+      transition: 0.3s;
+    }
+
+    nav a:hover {
+      opacity: 1;
+      color: #00f7ff;
+    }
+
+    .hero {
+      text-align: center;
+      padding: 90px 20px;
+    }
+
+    .hero h2 {
+      font-size: 52px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .hero h2 span {
+      color: #00f7ff;
+    }
+
+    .hero p {
+      margin-top: 20px;
+      font-size: 18px;
+      opacity: 0.8;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-box {
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .search-box input {
+      padding: 15px;
+      width: 320px;
+      border-radius: 12px;
+      border: none;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .search-box button {
+      padding: 15px 25px;
+      border: none;
+      border-radius: 12px;
+      background: #00f7ff;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .search-box button:hover {
+      background: #00c2cc;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+      padding: 60px 40px;
+      max-width: 1100px;
+      margin: auto;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 18px;
+      padding: 25px;
+      border: 1px solid rgba(0, 247, 255, 0.15);
+      backdrop-filter: blur(12px);
+      transition: 0.3s;
+    }
+
+    .card:hover {
+      transform: translateY(-8px);
+      border-color: #00f7ff;
+    }
+
+    .card h3 {
+      margin-bottom: 10px;
+      color: #00f7ff;
+    }
+
+    footer {
+      text-align: center;
+      padding: 25px;
+      opacity: 0.6;
+      font-size: 14px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Navbar -->
+  <header>
+    <h1>OnchainIQ</h1>
+    <nav>
+      <a href="#">Scanner</a>
+      <a href="#">Trending</a>
+      <a href="#">Whales</a>
+      <a href="#">Risk Check</a>
+    </nav>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h2>The Smartest <span>Dex Scanner</span><br>for On-Chain Traders</h2>
+    <p>
+      Scan any token instantly, track whale activity, detect rugpull risks,
+      and explore the hottest DEX pairs — all in one platform.
+    </p>
+
+    <!-- Search -->
+    <div class="search-box">
+      <input type="text" placeholder="Enter Token Address or Name..." />
+      <button>Scan Now</button>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section class="cards">
+    <div class="card">
+      <h3>⚡ Instant Token Scan</h3>
+      <p>Analyze any token in seconds with real-time DEX data.</p>
+    </div>
+
+    <div class="card">
+      <h3>🐳 Whale Tracker</h3>
+      <p>Follow smart money wallets and insider movements.</p>
+    </div>
+
+    <div class="card">
+      <h3>🛡 Rugpull Detection</h3>
+      <p>Identify honeypots, high taxes, and risky contracts.</p>
+    </div>
+
+    <div class="card">
+      <h3>📈 Trending Pairs</h3>
+      <p>Discover new listings and top gainers before everyone else.</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    © 2026 OnchainIQ — Dex Scanner Platform. All Rights Reserved.
+  </footer>
+
+</body>
+</html>
